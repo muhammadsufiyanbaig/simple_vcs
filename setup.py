@@ -7,11 +7,11 @@ setup(
     name="simple-vcs",
     version="1.0.0",
     author="Your Name",
-    author_email="send.sufiyan@gmail.com",
+    author_email="your.email@example.com",
     description="A simple version control system written in Python",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/muhammadsufiyanbaig/simple_vcs",
+    url="https://github.com/yourusername/simple-vcs",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 4 - Beta",

@@ -41,13 +41,20 @@ class SimpleVCS:
         if not self._check_repo():
             return False
             
-        file_path = Path(file_path)
+        file_path = Path(file_path).resolve()  # Convert to absolute path
         if not file_path.exists():
             print(f"File {file_path} does not exist")
             return False
             
         if not file_path.is_file():
             print(f"{file_path} is not a file")
+            return False
+            
+        # Check if file is within repository
+        try:
+            relative_path = file_path.relative_to(self.repo_path)
+        except ValueError:
+            print(f"File {file_path} is not within the repository")
             return False
             
         # Calculate file hash
@@ -58,7 +65,7 @@ class SimpleVCS:
         
         # Add to staging
         staging = self._read_json(self.staging_file)
-        staging[str(file_path.relative_to(self.repo_path))] = {
+        staging[str(relative_path)] = {
             "hash": file_hash,
             "size": file_path.stat().st_size,
             "modified": file_path.stat().st_mtime
