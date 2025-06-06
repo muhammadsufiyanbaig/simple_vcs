@@ -1,0 +1,250 @@
+# .github/workflows/publish.yml
+name: Build and Publish to PyPI
+
+on:
+  # Trigger on pushes to main branch
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  
+  # Trigger on release creation
+  release:
+    types: [published]
+  
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install pytest pytest-cov
+    
+    - name: Run tests
+      run: |
+        # Basic functionality tests
+        python -c "from simple_vcs import SimpleVCS; print('Import successful')"
+        python -m simple_vcs.cli --help
+        
+        # Create test directory and run basic commands
+        mkdir test_dir
+        cd test_dir
+        python -m simple_vcs.cli init
+        echo "test content" > test.txt
+        python -m simple_vcs.cli add test.txt
+        python -m simple_vcs.cli commit -m "test commit"
+        python -m simple_vcs.cli log
+        python -m simple_vcs.cli status
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+    
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+    
+    - name: Build package
+      run: python -m build
+    
+    - name: Check distribution
+      run: twine check dist/*
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist
+        path: dist/
+
+  publish-testpypi:
+    needs: build
+    runs-on: ubuntu-latest
+    # Only run on tags or manual dispatch
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: dist
+        path: dist/
+    
+    - name: Publish to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        skip-existing: true
+
+  publish-pypi:
+    needs: [build, publish-testpypi]
+    runs-on: ubuntu-latest
+    # Only publish to PyPI on release
+    if: github.event_name == 'release' && github.event.action == 'published'
+    
+    steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: dist
+        path: dist/
+    
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}
+
+---
+
+# .github/workflows/test.yml
+name: Test Package
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']
+        exclude:
+          # Exclude some combinations to reduce CI time
+          - os: macOS-latest
+            python-version: '3.7'
+          - os: macOS-latest
+            python-version: '3.8'
+          - os: windows-latest
+            python-version: '3.7'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+    
+    - name: Test import
+      run: python -c "from simple_vcs import SimpleVCS; print('✓ Import successful')"
+    
+    - name: Test CLI help
+      run: python -m simple_vcs.cli --help
+    
+    - name: Test basic functionality
+      run: |
+        mkdir test_functionality
+        cd test_functionality
+        python -m simple_vcs.cli init
+        echo "Hello World" > hello.txt
+        python -m simple_vcs.cli add hello.txt
+        python -m simple_vcs.cli commit -m "Initial commit"
+        python -m simple_vcs.cli log
+        python -m simple_vcs.cli status
+        echo "Modified content" > hello.txt
+        python -m simple_vcs.cli add hello.txt
+        python -m simple_vcs.cli commit -m "Second commit"
+        python -m simple_vcs.cli diff --c1 1 --c2 2
+    
+    - name: Test Python API
+      run: |
+        python -c "
+        from simple_vcs import SimpleVCS
+        import tempfile
+        import os
+        
+        # Create temp directory for testing
+        with tempfile.TemporaryDirectory() as tmpdir:
+            os.chdir(tmpdir)
+            
+            # Test API
+            vcs = SimpleVCS()
+            assert vcs.init_repo() == True
+            
+            # Create test file
+            with open('api_test.txt', 'w') as f:
+                f.write('API test content')
+            
+            assert vcs.add_file('api_test.txt') == True
+            assert vcs.commit('API test commit') == True
+            assert vcs.show_log() == True
+            assert vcs.status() == True
+            
+            print('✓ Python API test successful')
+        "
+
+---
+
+# .github/workflows/release.yml
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          ## Changes in this Release
+          - Updated SimpleVCS package
+          - See commit history for detailed changes
+          
+          ## Installation
+          ```bash
+          pip install simple-vcs==${{ github.ref_name }}
+          ```
+          
+          ## Usage
+          ```bash
+          python -m simple_vcs.cli init
+          python -m simple_vcs.cli add myfile.txt
+          python -m simple_vcs.cli commit -m "My commit"
+          ```
+        draft: false
+        prerelease: false
