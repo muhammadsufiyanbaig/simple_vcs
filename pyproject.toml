@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "simple-vcs"
+version = "1.0.0"
+description = "A simple version control system written in Python"
+authors = [
+    { name = "Muhammad Sufiyan Baig", email = "send.sufiyan@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = [
+    "click>=7.0"
+]
+license = { file = "LICENSE" }
+
+[project.urls]
+Homepage = "https://github.com/muhammadsufiyanbaig/simple_vcs/"
+
+[project.scripts]
+svcs = "simple_vcs.cli:main"

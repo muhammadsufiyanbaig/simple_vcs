@@ -51,4 +51,4 @@ def status():
     vcs.status()
 
 if __name__ == '__main__':
-    main()
+    main
