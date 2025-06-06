@@ -3,7 +3,7 @@ Name: simple-vcs
 Version: 1.0.0
 Summary: A simple version control system written in Python
 Home-page: https://github.com/muhammadsufiyanbaig/simple_vcs
-Author: Your Name
+Author: Muhammad Sufiyan Baig
 Author-email: send.sufiyan@gmail.com
 Classifier: Development Status :: 4 - Beta
 Classifier: Intended Audience :: Developers
