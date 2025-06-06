@@ -1,0 +1,2 @@
+[console_scripts]
+svcs = simple_vcs.cli:main
