@@ -1,4 +1,3 @@
-# README.md
 # SimpleVCS
 
 A simple version control system written in Python that provides basic VCS functionality similar to Git.
@@ -25,7 +24,7 @@ pip install simple-vcs
 ```bash
 # Clone the repository
 git clone https://github.com/muhammadsufiyanbaig/simple_vcs.git
-cd simple-vcs
+cd simple_vcs
 
 # Install in development mode
 pip install -e .
@@ -171,8 +170,8 @@ When initialized, SimpleVCS creates a `.svcs` directory containing:
 ### Setting up Development Environment
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/simple-vcs.git
-cd simple-vcs
+git clone https://github.com/muhammadsufiyanbaig/simple_vcs.git
+cd simple_vcs
 
 # Create virtual environment
 python -m venv venv
@@ -236,7 +235,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Author
 
-Your Name - your.email@example.com
+Muhammad Sufiyan Baig - send.sufiyan@gmail.com
+
+Project Link: [https://github.com/muhammadsufiyanbaig/simple_vcs](https://github.com/muhammadsufiyanbaig/simple_vcs)
 
 ## Changelog
 
