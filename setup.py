@@ -11,7 +11,7 @@ setup(
     description="A simple version control system written in Python",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/simple-vcs",
+    url="https://github.com/muhammadsufiyanbaig/simple_vcs/edit/main/setup.py",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 4 - Beta",
