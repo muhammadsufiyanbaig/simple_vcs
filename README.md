@@ -12,6 +12,10 @@ A simple version control system written in Python that provides basic VCS functi
 - Repository status tracking
 - Cross-platform compatibility
 - Both CLI and Python API support
+- Quick revert to any previous commit
+- Create and restore from snapshots
+- Automatic object compression to save space
+- Simplified workflow compared to Git
 
 ## Installation
 
@@ -104,6 +108,24 @@ svcs diff --c1 1 --c2 3
 svcs diff --c1 2
 ```
 
+#### Advanced Operations
+```bash
+# Quickly revert to a specific commit
+svcs revert 3
+
+# Create a snapshot of current state
+svcs snapshot
+
+# Create a named snapshot
+svcs snapshot --name my_backup
+
+# Restore from a snapshot
+svcs restore path/to/snapshot.zip
+
+# Compress stored objects to save space
+svcs compress
+```
+
 ### Python API
 
 ```python
@@ -130,6 +152,19 @@ vcs.show_diff(1, 2)
 
 # Check repository status
 vcs.status()
+
+# Quick revert to a specific commit
+vcs.quick_revert(2)
+
+# Create a snapshot of current state
+vcs.create_snapshot()
+vcs.create_snapshot("my_backup")
+
+# Restore from a snapshot
+vcs.restore_from_snapshot("my_backup.zip")
+
+# Compress stored objects to save space
+vcs.compress_objects()
 ```
 
 ## Advanced Usage
@@ -240,6 +275,14 @@ Muhammad Sufiyan Baig - send.sufiyan@gmail.com
 Project Link: [https://github.com/muhammadsufiyanbaig/simple_vcs](https://github.com/muhammadsufiyanbaig/simple_vcs)
 
 ## Changelog
+
+### Version 1.1.0
+- Added quick revert functionality to go back to any commit instantly
+- Added snapshot creation and restoration features
+- Added automatic object compression to save disk space
+- Improved CLI with new commands (revert, snapshot, restore, compress)
+- Enhanced documentation and examples
+- Fixed CLI entry point issue for direct terminal usage
 
 ### Version 1.0.0
 - Initial release

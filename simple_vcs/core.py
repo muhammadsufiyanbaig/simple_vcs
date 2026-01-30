@@ -6,6 +6,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+import zipfile
 
 class SimpleVCS:
     """Simple Version Control System core functionality"""
@@ -274,3 +275,108 @@ class SimpleVCS:
             if commit["id"] == commit_id:
                 return commit
         return None
+
+    def quick_revert(self, commit_id: int) -> bool:
+        """Quickly revert to a specific commit"""
+        if not self._check_repo():
+            return False
+
+        commit = self._get_commit_by_id(commit_id)
+        if not commit:
+            print(f"Commit {commit_id} not found")
+            return False
+
+        # Restore files from the specified commit
+        for file_path, file_info in commit["files"].items():
+            target_path = self.repo_path / file_path
+            obj_path = self.objects_dir / file_info["hash"]
+
+            # Create parent directories if they don't exist
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+
+            # Copy file from objects to target location
+            if obj_path.exists():
+                shutil.copy2(obj_path, target_path)
+
+        # Update HEAD to point to the reverted commit
+        self.head_file.write_text(str(commit_id))
+
+        print(f"Reverted to commit {commit_id}: {commit['message']}")
+        return True
+
+    def create_snapshot(self, name: str = None) -> bool:
+        """Create a compressed snapshot of the current repository state"""
+        if not self._check_repo():
+            return False
+
+        snapshot_name = name or f"snapshot_{int(time.time())}"
+        snapshot_path = self.repo_path / f"{snapshot_name}.zip"
+
+        # Create a zip archive of all tracked files
+        with zipfile.ZipFile(snapshot_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for root, dirs, files in os.walk(self.repo_path):
+                # Skip .svcs directory
+                dirs[:] = [d for d in dirs if d != '.svcs']
+
+                for file in files:
+                    file_path = Path(root) / file
+                    if file_path != snapshot_path:  # Don't include the snapshot itself
+                        arc_path = file_path.relative_to(self.repo_path)
+                        zipf.write(file_path, arc_path)
+
+        print(f"Created snapshot: {snapshot_path}")
+        return True
+
+    def restore_from_snapshot(self, snapshot_path: str) -> bool:
+        """Restore repository from a snapshot"""
+        snapshot_path = Path(snapshot_path)
+        if not snapshot_path.exists():
+            print(f"Snapshot {snapshot_path} does not exist")
+            return False
+
+        # Extract the zip archive
+        with zipfile.ZipFile(snapshot_path, 'r') as zipf:
+            # Clear current files (but preserve .svcs directory)
+            for item in self.repo_path.iterdir():
+                if item.name != '.svcs':
+                    if item.is_dir():
+                        shutil.rmtree(item)
+                    else:
+                        item.unlink()
+
+            # Extract all files
+            zipf.extractall(self.repo_path)
+
+        print(f"Restored from snapshot: {snapshot_path}")
+        return True
+
+    def compress_objects(self) -> bool:
+        """Compress stored objects to save space"""
+        if not self._check_repo():
+            return False
+
+        original_size = sum(f.stat().st_size for f in self.objects_dir.glob('*') if f.is_file())
+
+        # For each object file, compress it if it's large enough to benefit
+        for obj_file in self.objects_dir.glob('*'):
+            if obj_file.is_file() and obj_file.stat().st_size > 1024:  # Only compress files > 1KB
+                # Create a compressed version with .gz extension
+                compressed_path = obj_file.with_suffix(obj_file.suffix + '.gz')
+                with open(obj_file, 'rb') as f_in:
+                    import gzip
+                    with gzip.open(compressed_path, 'wb') as f_out:
+                        f_out.writelines(f_in)
+
+                # Replace original with compressed version
+                obj_file.unlink()
+                # Decompress back to original name for compatibility
+                with gzip.open(compressed_path, 'rb') as f_in:
+                    with open(obj_file, 'wb') as f_out:
+                        f_out.write(f_in.read())
+                compressed_path.unlink()
+
+        new_size = sum(f.stat().st_size for f in self.objects_dir.glob('*') if f.is_file())
+        saved_space = original_size - new_size
+
+        print(f"Compression completed. Saved approximately {saved_space} bytes.")
+        return True

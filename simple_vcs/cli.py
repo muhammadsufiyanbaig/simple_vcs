@@ -50,5 +50,32 @@ def status():
     vcs = SimpleVCS()
     vcs.status()
 
+@main.command()
+@click.argument('commit_id', type=int)
+def revert(commit_id):
+    """Quickly revert to a specific commit"""
+    vcs = SimpleVCS()
+    vcs.quick_revert(commit_id)
+
+@main.command()
+@click.option('--name', help='Name for the snapshot')
+def snapshot(name):
+    """Create a compressed snapshot of the current repository state"""
+    vcs = SimpleVCS()
+    vcs.create_snapshot(name)
+
+@main.command()
+@click.argument('snapshot_path', type=click.Path(exists=True))
+def restore(snapshot_path):
+    """Restore repository from a snapshot"""
+    vcs = SimpleVCS()
+    vcs.restore_from_snapshot(snapshot_path)
+
+@main.command()
+def compress():
+    """Compress stored objects to save space"""
+    vcs = SimpleVCS()
+    vcs.compress_objects()
+
 if __name__ == '__main__':
-    main
+    main()
