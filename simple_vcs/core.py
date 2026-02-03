@@ -15,6 +15,9 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 from rich.syntax import Syntax
 from rich import box
 from rich.text import Text
+from rich.columns import Columns
+from rich.tree import Tree
+from rich.align import Align
 
 class SimpleVCS:
     """Simple Version Control System core functionality"""
@@ -36,6 +39,13 @@ class SimpleVCS:
             self.console.print(f"[yellow]WARNING: Repository already exists at[/yellow] [cyan]{self.repo_path}[/cyan]")
             return False
 
+        # Print beautiful header
+        self.console.print()
+        header = Text("SimpleVCS", style="bold cyan", justify="center")
+        self.console.print(header)
+        self.console.print(Align.center("[dim]A Beautiful Version Control System[/dim]"))
+        self.console.print()
+
         self.console.print("[cyan]Initializing repository...[/cyan]")
 
         # Create directory structure
@@ -47,18 +57,50 @@ class SimpleVCS:
         self._write_json(self.staging_file, {})
         self.head_file.write_text("0")  # Start with commit 0
 
+        # Create tree structure visualization
+        tree = Tree(
+            "[bold cyan].svcs/[/bold cyan] [dim](Repository Root)[/dim]",
+            guide_style="cyan"
+        )
+        tree.add("[green]objects/[/green] [dim]- Stores file content by hash[/dim]")
+        tree.add("[green]commits.json[/green] [dim]- Tracks all commits and history[/dim]")
+        tree.add("[green]staging.json[/green] [dim]- Lists files ready to commit[/dim]")
+        tree.add("[green]HEAD[/green] [dim]- Points to current commit[/dim]")
+
+        # Create success panel with tree
+        panel_content = (
+            f"[bold green]SUCCESS![/bold green] Repository initialized\n\n"
+            f"[bold]Location:[/bold]\n"
+            f"[cyan]{self.repo_path}[/cyan]\n\n"
+            f"[bold]Directory Structure:[/bold]"
+        )
+
         panel = Panel(
-            f"[green]SUCCESS[/green] Repository initialized at [cyan]{self.repo_path}[/cyan]\n\n"
-            "[dim]Structure created:[/dim]\n"
-            "  - .svcs/objects/ - File storage\n"
-            "  - .svcs/commits.json - Commit history\n"
-            "  - .svcs/staging.json - Staged files\n"
-            "  - .svcs/HEAD - Current commit",
-            title="[bold green]SimpleVCS Repository[/bold green]",
+            panel_content,
+            title="[bold white on green] Repository Created [/bold white on green]",
             border_style="green",
-            box=box.ROUNDED
+            box=box.DOUBLE,
+            padding=(1, 2)
         )
         self.console.print(panel)
+        self.console.print(tree)
+
+        # Quick start guide
+        guide_panel = Panel(
+            "[bold]Quick Start:[/bold]\n\n"
+            "[cyan]1.[/cyan] Add files:      [yellow]svcs add <file>[/yellow]\n"
+            "[cyan]2.[/cyan] Commit changes: [yellow]svcs commit -m \"message\"[/yellow]\n"
+            "[cyan]3.[/cyan] View history:   [yellow]svcs log[/yellow]\n"
+            "[cyan]4.[/cyan] Check status:   [yellow]svcs status[/yellow]",
+            title="[bold cyan]Next Steps[/bold cyan]",
+            border_style="cyan",
+            box=box.ROUNDED,
+            padding=(0, 2)
+        )
+        self.console.print()
+        self.console.print(guide_panel)
+        self.console.print()
+
         return True
     
     def add_file(self, file_path: str) -> bool:
@@ -235,56 +277,102 @@ class SimpleVCS:
 
         commits = self._read_json(self.commits_file)
         if not commits:
-            self.console.print("[yellow]WARNING: No commits found[/yellow]")
-            self.console.print("[dim]Tip: Use 'svcs commit -m \"message\"' to create your first commit[/dim]")
+            # Create empty state panel
+            empty_panel = Panel(
+                "[yellow]No commits yet[/yellow]\n\n"
+                "[dim]Your repository is ready, but you haven't made any commits.[/dim]\n\n"
+                "[bold]Get started:[/bold]\n"
+                "[cyan]1.[/cyan] Add files:  [yellow]svcs add <file>[/yellow]\n"
+                "[cyan]2.[/cyan] Commit:     [yellow]svcs commit -m \"First commit\"[/yellow]",
+                title="[bold yellow]Empty Repository[/bold yellow]",
+                border_style="yellow",
+                box=box.ROUNDED,
+                padding=(1, 2)
+            )
+            self.console.print()
+            self.console.print(empty_panel)
+            self.console.print()
             return False
 
         commits_to_show = commits[-limit:] if limit else commits
         commits_to_show.reverse()  # Show newest first
 
-        # Create commits table
+        # Print beautiful header
+        self.console.print()
+        header_text = Text()
+        header_text.append("Commit History", style="bold cyan")
+        self.console.print(Align.center(header_text))
+        self.console.print(Align.center(f"[dim]Repository: {self.repo_path.name}[/dim]"))
+        self.console.print()
+
+        # Create commits table with enhanced styling
         table = Table(
-            title="[bold cyan]Commit History[/bold cyan]",
-            box=box.ROUNDED,
+            box=box.DOUBLE_EDGE,
             show_header=True,
-            header_style="bold magenta"
+            header_style="bold white on blue",
+            border_style="cyan",
+            padding=(0, 1)
         )
-        table.add_column("ID", justify="center", style="cyan", width=6)
-        table.add_column("Date", style="green", width=19)
-        table.add_column("Message", style="white")
-        table.add_column("Files", justify="center", style="yellow", width=7)
-        table.add_column("Parent", justify="center", style="dim", width=7)
+        table.add_column("ID", justify="center", style="bold cyan", width=8)
+        table.add_column("Date & Time", style="green", width=19)
+        table.add_column("Commit Message", style="white", no_wrap=False)
+        table.add_column("Files", justify="center", style="bold yellow", width=7)
+        table.add_column("Parent", justify="center", style="dim", width=8)
 
         current_commit_id = self._get_current_commit_id()
 
         for commit in commits_to_show:
             commit_id = str(commit['id'])
-            if commit['id'] == current_commit_id:
-                commit_id = f"* {commit_id}"  # Mark current commit
+            is_current = commit['id'] == current_commit_id
+
+            if is_current:
+                commit_id = f"-> {commit_id}"  # Mark current commit with arrow
 
             date_str = datetime.fromtimestamp(commit['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
             message = commit['message']
-            if len(message) > 50:
-                message = message[:47] + "..."
+            if len(message) > 60:
+                message = message[:57] + "..."
             files_count = str(len(commit['files']))
-            parent = str(commit.get('parent', '-'))
+            parent = str(commit.get('parent', 'None'))
 
-            # Style current commit differently
-            if commit['id'] == current_commit_id:
+            # Style current commit differently with background
+            if is_current:
                 table.add_row(
-                    f"[bold cyan]{commit_id}[/bold cyan]",
-                    date_str,
-                    f"[bold]{message}[/bold]",
-                    files_count,
-                    parent
+                    f"[bold white on blue]{commit_id}[/bold white on blue]",
+                    f"[bold]{date_str}[/bold]",
+                    f"[bold white]{message}[/bold white]",
+                    f"[bold]{files_count}[/bold]",
+                    parent,
+                    style="on blue"
                 )
             else:
                 table.add_row(commit_id, date_str, message, files_count, parent)
 
         self.console.print(table)
 
+        # Statistics footer
+        stats_text = (
+            f"[dim]Total commits: [/dim][cyan]{len(commits)}[/cyan]"
+        )
         if limit and len(commits) > limit:
-            self.console.print(f"\n[dim]Showing last {limit} of {len(commits)} commits[/dim]")
+            stats_text += f"[dim]  |  Showing: [/dim][yellow]Last {limit}[/yellow]"
+        if current_commit_id:
+            stats_text += f"[dim]  |  Current: [/dim][green]#{current_commit_id}[/green]"
+
+        self.console.print()
+        self.console.print(Align.center(stats_text))
+        self.console.print()
+
+        # Legend
+        legend = Panel(
+            "[bold white on blue]-> ID[/bold white on blue] = Current commit  |  "
+            "[dim]Parent[/dim] = Previous commit ID",
+            border_style="dim",
+            box=box.ROUNDED,
+            padding=(0, 2)
+        )
+        self.console.print(legend)
+        self.console.print()
 
         return True
     

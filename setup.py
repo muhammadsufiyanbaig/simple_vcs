@@ -5,10 +5,10 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="simple-vcs",
-    version="1.2.0",
+    version="1.3.0",
     author="Muhammad Sufiyan Baig",
     author_email="send.sufiyan@gmail.com",
-    description="A beautiful and simple version control system with a modern terminal interface",
+    description="A beautiful and simple version control system with a stunning terminal interface",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/muhammadsufiyanbaig/simple_vcs",

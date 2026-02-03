@@ -2,13 +2,14 @@
 
 A simple version control system written in Python that provides basic VCS functionality similar to Git - now with a **beautiful modern terminal interface**!
 
-## ✨ New in Version 1.2.0
+## ✨ New in Version 1.3.0
 
-**Stunning Visual Interface** - SimpleVCS now features a gorgeous terminal interface powered by Rich:
-- 🎨 **Colored Output** - Color-coded messages for success, warnings, and errors
-- 📊 **Beautiful Tables** - Commit history and status displayed in elegant tables
-- 📦 **Styled Panels** - Information presented in clean, bordered boxes
-- 🌟 **Professional Look** - Modern, easy-to-read formatting throughout
+**Enhanced Visual Experience** - SimpleVCS now features an even more stunning terminal interface:
+- 🎨 **Enhanced Init** - Beautiful header, tree structure, and quick start guide
+- 📜 **Gorgeous Log** - Double-bordered tables with highlighted current commit and legend
+- 💡 **Rich Help** - Custom help interface with examples and organized commands
+- 🌈 **Professional Design** - Centered headers, better spacing, and visual hierarchy
+- ⭐ **Better UX** - Empty state messages, statistics, and helpful tips throughout
 
 ## Features
 
@@ -284,6 +285,16 @@ Muhammad Sufiyan Baig - send.sufiyan@gmail.com
 Project Link: [https://github.com/muhammadsufiyanbaig/simple_vcs](https://github.com/muhammadsufiyanbaig/simple_vcs)
 
 ## Changelog
+
+### Version 1.3.0
+- **Enhanced Init Command**: Beautiful header, tree visualization, and quick start guide
+- **Gorgeous Log Display**: Double-bordered tables with current commit highlighting
+- **Custom Help Interface**: Rich-formatted help with organized commands and examples
+- **Better Visual Hierarchy**: Centered headers, improved spacing, and alignment
+- **Enhanced Empty States**: Helpful messages when no commits exist
+- **Statistics Display**: Show total commits, current commit, and filters in log
+- **Legend Support**: Clear explanations of symbols and formatting
+- **Professional Polish**: Refined colors, borders, and overall presentation
 
 ### Version 1.2.0
 - **Beautiful Terminal Interface**: Complete visual overhaul with Rich library
