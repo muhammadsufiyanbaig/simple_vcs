@@ -1,6 +1,14 @@
 # SimpleVCS
 
-A simple version control system written in Python that provides basic VCS functionality similar to Git.
+A simple version control system written in Python that provides basic VCS functionality similar to Git - now with a **beautiful modern terminal interface**!
+
+## ✨ New in Version 1.2.0
+
+**Stunning Visual Interface** - SimpleVCS now features a gorgeous terminal interface powered by Rich:
+- 🎨 **Colored Output** - Color-coded messages for success, warnings, and errors
+- 📊 **Beautiful Tables** - Commit history and status displayed in elegant tables
+- 📦 **Styled Panels** - Information presented in clean, bordered boxes
+- 🌟 **Professional Look** - Modern, easy-to-read formatting throughout
 
 ## Features
 
@@ -199,6 +207,7 @@ When initialized, SimpleVCS creates a `.svcs` directory containing:
 
 - Python 3.7 or higher
 - click>=7.0 (for CLI functionality)
+- rich>=10.0.0 (for beautiful terminal interface)
 
 ## Development
 
@@ -275,6 +284,16 @@ Muhammad Sufiyan Baig - send.sufiyan@gmail.com
 Project Link: [https://github.com/muhammadsufiyanbaig/simple_vcs](https://github.com/muhammadsufiyanbaig/simple_vcs)
 
 ## Changelog
+
+### Version 1.2.0
+- **Beautiful Terminal Interface**: Complete visual overhaul with Rich library
+- **Colored Output**: Green for success, yellow for warnings, red for errors
+- **Elegant Tables**: Commit history, status, and diffs in formatted tables
+- **Styled Panels**: Information displayed in bordered panels with rounded corners
+- **Enhanced Commands**: All commands now have beautiful, professional output
+- **Better UX**: Clear visual hierarchy and consistent formatting
+- **Windows Compatible**: No problematic Unicode characters
+- **Enhanced Help**: Detailed descriptions and examples for all commands
 
 ### Version 1.1.0
 - Added quick revert functionality to go back to any commit instantly
